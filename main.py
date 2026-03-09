@@ -8,7 +8,7 @@ from tqdm import tqdm
 # создание excel листа
 wb = Workbook()
 sheet = wb.active
-headers = ['Уровень', 'Наименование', 'Полевая модернизация',
+headers = ['Нация', 'Уровень', 'Наименование', 'Полевая модернизация',
            'Оборудование 1', 'Оборудование 2']
 sheet.append(headers)
 
@@ -26,15 +26,16 @@ with sync_playwright() as p:
     hrefs = page.locator('.grid-table a').evaluate_all('''
         (elements, allowed) => elements
             .filter(el => {{
-                const tank_lvl = el.childNodes[2].textContent.trim();
+                const tank_lvl = el.children[2].textContent.trim();
                 return allowed.includes(tank_lvl);
-            }}).map(el => el.href)
+            }}).map(el => [el.href, el.children[0].querySelector("img").src])
     ''', levels)
     print(f'Обнаружено {len(hrefs)} танков 🔎')
 
-    for href in tqdm(hrefs):
+    for href, nation_url in tqdm(hrefs):
         page.goto(url=href)
         title = page.locator('.name')
+        tank_nation = nation_url.split('/')[-1].rstrip('.png')
         tank_lvl = title.evaluate('el => el.childNodes[0].textContent.trim()')
         tank_name = title.evaluate('el => el.childNodes[2].textContent.trim()')
 
@@ -60,7 +61,7 @@ with sync_playwright() as p:
         equip_group2 = ', '.join(equip_items[5:])
 
         sheet.append(
-            [tank_lvl, tank_name, field_modifications,
+            [tank_nation, tank_lvl, tank_name, field_modifications,
              equip_group1, equip_group2]
             )
 
