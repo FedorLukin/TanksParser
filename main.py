@@ -58,7 +58,7 @@ with sync_playwright() as p:
             title = item.evaluate('el => el.childNodes[0].textContent.trim()')
             equip_items.append(title)
         equip_group1 = ', '.join(equip_items[:4])
-        equip_group2 = ', '.join(equip_items[5:])
+        equip_group2 = ', '.join(equip_items[4:])
 
         sheet.append(
             [tank_nation, tank_lvl, tank_name, field_modifications,
